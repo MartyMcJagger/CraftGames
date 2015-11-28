@@ -1,0 +1,5 @@
+name: FireSword
+behavior:
+  melee:
+    victim: setFireTicks(i1200)
+    message: "$v is now on fire!"

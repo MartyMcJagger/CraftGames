@@ -1,32 +1,24 @@
-package mcjagger.mc.craftgames.api;
+package mcjagger.mc.craftgames.weapon;
 
 import org.bukkit.entity.Player;
 
+import mcjagger.mc.craftgames.api.Playable;
+
 public abstract class WeaponBehavior {
 	
+	
 	public static final WeaponBehavior DEFAULT = new WeaponBehavior(){
+		@Override
 		public WeaponResult onAction(Player attacker, Player victim, Playable playable) {
 			return new WeaponResult(false, null);
 		}
 	};
 	
-	//private final YamlConfiguration config;
+	public WeaponResult onAction(Player attacker, Player victim, Playable playable) {return WeaponResult.NO_CHANGE;}
 	
-	public WeaponBehavior() {
-		
-	}
-	
-	/*public WeaponBehavior(YamlConfiguration config) {
-		this.config = config;
-	}*/
-	
-	//protected YamlConfiguration getConfig() {
-	//	return config;
-	//}
-	
-	public abstract WeaponResult onAction(Player attacker, Player victim, Playable playable);
-
 	public static class WeaponResult {
+		
+		public static final WeaponResult NO_CHANGE = new WeaponResult(false, null);
 		
 		private boolean isCancelled;
 		private Double damage;
@@ -50,8 +42,7 @@ public abstract class WeaponBehavior {
 
 		public void setDamage(double damage) {
 			this.damage = damage;
-		}
-		
+		}	
 	}
 	
 }

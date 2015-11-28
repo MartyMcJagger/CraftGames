@@ -1,4 +1,4 @@
-package mcjagger.mc.craftgames.impl;
+package mcjagger.mc.craftgames.impl.module;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,12 +12,12 @@ import org.bukkit.inventory.PlayerInventory;
 import mcjagger.mc.craftgames.api.Module;
 import mcjagger.mc.craftgames.api.Playable;
 
-public abstract class LoadoutModule extends Module {
+public abstract class ModuleLoadout extends Module {
 	
 	Map<UUID, ItemStack[]> itemContents;
 	Map<UUID, ItemStack[]> armorContents;
 	
-	public LoadoutModule(Playable playable) {
+	public ModuleLoadout(Playable playable) {
 		super(playable);
 		
 		itemContents = new HashMap<UUID, ItemStack[]>();
@@ -51,10 +51,7 @@ public abstract class LoadoutModule extends Module {
 	}
 	
 	@Override
-	public void load() {}
-	
-	@Override
-	public void start() {
+	public void started() {
 		for (UUID uuid : playable.getPlayers()) {
 			Player player = Bukkit.getPlayer(uuid);
 			if (player != null)
@@ -63,7 +60,7 @@ public abstract class LoadoutModule extends Module {
 	}
 	
 	@Override
-	public void stop() {
+	public void stopped() {
 		for (UUID uuid : playable.getPlayers()) {
 			Player player = Bukkit.getPlayer(uuid);
 			if (player != null)
