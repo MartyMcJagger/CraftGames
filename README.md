@@ -1,4 +1,4 @@
-MyGames
+CraftGames
 ======
 
 Official implementation of MyGames API
