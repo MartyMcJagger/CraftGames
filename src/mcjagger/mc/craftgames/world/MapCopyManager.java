@@ -19,11 +19,11 @@ import org.bukkit.WorldCreator;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import mcjagger.mc.mygames.Game;
 import mcjagger.mc.mygames.MyGames;
 import mcjagger.mc.mygames.Utils;
-import mcjagger.mc.mygames.world.location.SpawnLocation;
+import mcjagger.mc.mygames.game.Game;
 import mcjagger.mc.mygames.world.location.MapLocation;
+import mcjagger.mc.mygames.world.location.SpawnLocation;
 
 //TODO Override annotations and javadocs
 public final class MapCopyManager {
@@ -68,10 +68,13 @@ public final class MapCopyManager {
 					return false;
 			}
 		} else {
-			if (MyGames.getMapConfigManager().getConfig(key).getConfigurationSection("location.spawn").getKeys(false).isEmpty())
+			MyGames.debug(key + " > McM 71");
+			if (MyGames.getMapConfigManager().getConfig(key).getConfigurationSection("location.spawn").getKeys(false).isEmpty()) {
+				MyGames.debug("empty");
 				return false;
+			}
 		}
-		
+		MyGames.debug(key + " is compatible for " + game.getName());
 		return true;
 	}
 
@@ -83,10 +86,12 @@ public final class MapCopyManager {
 				compatible.add(key);
 		}
 		
+		MyGames.debug("Compatible:" + compatible.toString());
 		return compatible;
 	}
 	
 	public World getWorldCopy(String key) {
+		MyGames.debug(key + " in " + MyGames.getMapConfigManager().getList().toString());
 		if (!MyGames.getMapConfigManager().getList().contains(key))
 			return null;
 		
@@ -105,7 +110,7 @@ public final class MapCopyManager {
 	 * HOLD ON TIGER! CALLING THIS METHOD COULD DELETE YOUR MAPS!
 	 */
 	public void destroyCopy(String mapname) {
-		if (!dupes.containsKey(mapname)) {
+		if (isKey(mapname) || !dupes.containsKey(mapname)) {
 			MyGames.getLogger().severe("Almost deleted map " + mapname + "! Tell your devs to be careful with mcjagger.mc.craftgames.WorldCopyManager$destroyCopy(String)!");
 			return;
 		}
@@ -208,6 +213,9 @@ public final class MapCopyManager {
 	
 	//TODO: Add a bunch of checks
 	public boolean isKey(String mapname) {
+		
+		return ! mapname.matches("\\w+_\\d+");
+		/*
 		try {
 			int endIndex = mapname.lastIndexOf('_');
 			String suffix = mapname.substring(endIndex);
@@ -215,13 +223,14 @@ public final class MapCopyManager {
 			return false;
 		} catch (Exception e) {
 			return true;
-		}
+		}*/
 	}
 	
 	public static String getKey(String mapname) {
 		int endIndex = mapname.lastIndexOf('_');
-		String key = mapname.substring(0, endIndex);
-		return key;
+		if (endIndex > 0)
+			mapname = mapname.substring(0, endIndex);
+		return mapname;
 	}
 	
 	protected String getAvailableName(String key){

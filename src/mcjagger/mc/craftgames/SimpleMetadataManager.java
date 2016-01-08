@@ -88,6 +88,21 @@ public class SimpleMetadataManager extends MetadataManager {
 	
 	/*
 	 * (non-Javadoc)
+	 * @see mcjagger.mc.mygames.MetadataManager#setMode(org.bukkit.entity.Player, int)
+	 */
+	@Override
+	public void setMode(Player player, int mode) {
+		
+		switch (mode) {
+		case OTHER_GAME:	setInOther(player); break;
+		case SETUP:     	setInSetup(player); break;
+		case LOBBY:     	setInLobby(player); break;
+		}
+		
+	}
+	
+	/*
+	 * (non-Javadoc)
 	 * @see mcjagger.mc.mygames.MetadataManager#getGame(org.bukkit.entity.Player)
 	 */
 	@Override

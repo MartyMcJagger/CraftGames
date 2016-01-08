@@ -7,10 +7,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
 
+import mcjagger.mc.craftgames.world.SimpleMapConfigManager;
 import mcjagger.mc.mygames.MetadataManager;
 import mcjagger.mc.mygames.MyGames;
 import mcjagger.mc.mygames.inventorymenu.InventoryMenu;
@@ -58,6 +60,18 @@ public class WorldConfigListener implements Listener {
 		}
 	}
 	
+	@EventHandler
+	public void blockBroken(BlockBreakEvent event) {
+		SimpleMapConfigManager smcm = (SimpleMapConfigManager) MyGames.getMapConfigManager();
+		if (smcm.isMapLocation(event.getBlock().getLocation())) {
+			MyGames.debug("Is a MapLocation sign.");
+			smcm.mapLocationBroken(event.getBlock().getLocation());
+		} else {
+			MyGames.debug("Not a MapLocation sign.");
+			
+		}
+	}
+	
 	public boolean setBlock(Player player, ItemStack itemInHand, Location location) {
 
 		if (MyGames.getMetadataManager().getMode(player) != MetadataManager.SETUP)
@@ -70,14 +84,22 @@ public class WorldConfigListener implements Listener {
 
 		try {
 			String locationKey = MyGames.getMapConfigManager().getKeyFromTool(itemInHand);
+			Boolean multiple = MyGames.getMapConfigManager().canHaveMultiple(itemInHand);
 			
 			if (locationKey == null || location == null)
 				return false;
 			
-			MyGames.getMapConfigManager().setLocation(player.getWorld().getName(), locationKey,
+			if (multiple) {
+				MyGames.getMapConfigManager().addLocation(player.getWorld().getName(), locationKey, location);
+				player.sendMessage("Added location for " + locationKey);
+			} else {
+				MyGames.getMapConfigManager().setLocation(player.getWorld().getName(), locationKey,
 					location);
+				player.sendMessage("Attached location to " + locationKey);
+			}
 			
-			player.sendMessage("Attached location to " + locationKey);
+			MyGames.getMapConfigManager().markMapLocation(locationKey, multiple, location);
+			
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();

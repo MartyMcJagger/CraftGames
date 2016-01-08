@@ -26,10 +26,10 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import mcjagger.mc.mygames.Game;
 import mcjagger.mc.mygames.MetadataManager;
 import mcjagger.mc.mygames.MyGames;
 import mcjagger.mc.mygames.event.GameUpdateEvent;
+import mcjagger.mc.mygames.game.Game;
 
 public class SignListener implements Listener {
 	
@@ -56,7 +56,7 @@ public class SignListener implements Listener {
 			BlockState blockState = block.getState();
 			Sign sign = (Sign) blockState;
 			String game = ChatColor.stripColor(sign.getLine(0));
-			//Bukkit.broadcastMessage(game);
+			//MyGames.debug(game);
 				
 				if (!infoSigns.containsKey(game))
 					infoSigns.put(game, new ArrayList<Location>());
@@ -254,15 +254,15 @@ public class SignListener implements Listener {
 	
 	@EventHandler
 	public void onGameEvent(GameUpdateEvent event) {
-		//Bukkit.broadcastMessage("got event");
+		//MyGames.debug("got event");
 		if (!infoSigns.containsKey(event.getGame())){
-			//Bukkit.broadcastMessage("dont see that key.");
+			//MyGames.debug("dont see that key.");
 			//for (String string : infoSigns.keySet())
-				//Bukkit.broadcastMessage("but i do have:"+string);
+				//MyGames.debug("but i do have:"+string);
 			return;
 		}
 		for (Location loc : infoSigns.get(event.getGame())) {
-			//Bukkit.broadcastMessage("updating");
+			//MyGames.debug("updating");
 			Sign sign = (Sign)loc.getBlock().getState();
 			updateInfo(sign);
 		}
@@ -303,7 +303,7 @@ public class SignListener implements Listener {
 		line[2] = ChatColor.YELLOW + Integer.toString(gm.getPlayers().size())
 				+ ChatColor.BLUE + "/" + ChatColor.YELLOW
 				+ gm.minPlayers + "-" + gm.maxPlayers;
-		line[3] = ChatColor.YELLOW + MyGames.getWorldManager().getMapName(gm);
+		line[3] = ChatColor.YELLOW + MyGames.getMapManager().getMapName(gm);
 		return line;
 	}
 }

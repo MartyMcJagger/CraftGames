@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -15,6 +16,9 @@ import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
@@ -25,25 +29,25 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.google.common.collect.Lists;
 
-import mcjagger.mc.craftgames.listeners.WorldConfigListener;
-import mcjagger.mc.mygames.Game;
 import mcjagger.mc.mygames.MyGames;
 import mcjagger.mc.mygames.Utils;
+import mcjagger.mc.mygames.game.Game;
 import mcjagger.mc.mygames.inventorymenu.InventoryMenu;
 import mcjagger.mc.mygames.inventorymenu.MenuItem;
 import mcjagger.mc.mygames.inventorymenu.MenuItemListener;
 import mcjagger.mc.mygames.inventorymenu.Submenu;
 import mcjagger.mc.mygames.world.MapConfigManager;
-import mcjagger.mc.mygames.world.location.SpawnLocation;
 import mcjagger.mc.mygames.world.location.MapLocation;
+import mcjagger.mc.mygames.world.location.SpawnLocation;
 
 // TODO: Override annotations and javadocs
 public class SimpleMapConfigManager extends MapConfigManager {
 
-	private WorldConfigListener wcl;
+	//private WorldConfigListener wcl;
 
 	public static final String WORLD_LIST_PATH = "world.game.list";
-
+	public static final String MAPLOCATION_MARKER = "MapLocation";
+	
 	private FileConfiguration defConfig;
 	List<String> list;
 
@@ -67,12 +71,12 @@ public class SimpleMapConfigManager extends MapConfigManager {
 
 	public SimpleMapConfigManager() {
 
-		this.wcl = new WorldConfigListener();
-		Bukkit.getPluginManager().registerEvents(wcl, MyGames.getArcade());
 
 		defConfig = MyGames.getArcade().getConfig();
 
 		loadConfigs();
+		
+		MyGames.debug(list.toString());
 	}
 
 	public void addToList(String string) {
@@ -207,7 +211,16 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		String path = "location." + locationKey;
 		
 		FileConfiguration config = getConfig(worldKey);
-		List<Double> d = config.getDoubleList(path);
+		
+
+		List<Double> d;
+		if (config.isConfigurationSection(path)) {
+			Set<String> keys = config.getConfigurationSection(path).getKeys(false);
+			String randomKey = Utils.getRandomItem(keys);
+			d = config.getConfigurationSection(path).getDoubleList(randomKey);
+		} else {
+			d = config.getDoubleList(path);
+		}
 		if (d != null && d.size() == 3)
 			return d;//return new Location(key, d.get(0), d.get(1), d.get(2));
 		else
@@ -234,6 +247,7 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		return null;
 	}
 */
+	@Override
 	public void setLocation(String key,
 			String locationKey, Location loc) {
 
@@ -243,9 +257,109 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		List<Double> d = Lists.newArrayList(new Double[] { loc.getX(),
 				loc.getY(), loc.getZ() });
 		config.set(path, d);
+		
+		saveConfig(key);
+	}
+	
+	@Override
+	public void addLocation(String key, String locationKey, Location loc) {
+		String path = "location." + locationKey + ".";
+		int i = 0;
+		
+		FileConfiguration config = getConfig(key);
+	
+		while (config.contains(path + i))
+			i++;
+		
+		path += i;
+		
+		List<Double> d = Lists.newArrayList(new Double[] { loc.getX(),
+				loc.getY(), loc.getZ() });
+		
+		config.set(path, d);
 
 		saveConfig(key);
 	}
+	
+	@Override
+	public void removeLocation(String key, String locationKey, Location loc) {
+		String path = "location." + locationKey;
+		
+		FileConfiguration config = getConfig(key);
+		
+		List<Double> d = Lists.newArrayList(new Double[] { loc.getX(),
+				loc.getY(), loc.getZ() });
+		
+		if (config.isConfigurationSection(path)) {
+			ConfigurationSection sect = config.getConfigurationSection(path);
+			for (String subkey : sect.getKeys(false)) {
+				
+				List<Double> compare = sect.getDoubleList(subkey);
+				
+				if (d.equals(compare)) {
+					sect.set(subkey, null);
+					break;
+				}
+			}
+			MyGames.debug("Is a section");
+		}
+		else {
+			List<Double> compare = config.getDoubleList(path);
+			
+			if (d.equals(compare)) {
+				config.set(path, null);
+			}
+			MyGames.debug("Not a section");
+		}
+		
+		saveConfig(key);
+	}
+	
+	@Override
+	public boolean isMapLocation(Location loc) {
+		Block block = loc.getBlock();
+		
+		if (!(block.getState() instanceof Sign))
+			return false;
+		
+		Sign sign = (Sign) block.getState();
+		return sign.getLine(0).equals(MAPLOCATION_MARKER);
+	}
+	
+	@Override
+	public void markMapLocation(MapLocation mapLocation, Location location) {
+		markMapLocation(mapLocation.configKey(), mapLocation.canHaveMultiple(), location);
+	}
+	
+	@Override
+	public void markMapLocation(String configKey, boolean multiple, Location loc) {
+		Block block = loc.getBlock();
+		
+		block.setType(Material.SIGN_POST);
+		block.setType(Material.SIGN_POST, false);
+		
+		Sign sign = (Sign) block.getState();
+		sign.setLine(0, MAPLOCATION_MARKER);
+		sign.setLine(1, configKey);
+		sign.setLine(2, multiple + "");
+		
+		sign.update();
+	}
+	
+	public void mapLocationBroken(Location loc) {
+		Block block = loc.getBlock();
+		
+		if (!(block.getState() instanceof Sign))
+			throw new IllegalArgumentException();
+		
+		Sign sign = (Sign) block.getState();
+		if (!sign.getLine(0).equals(MAPLOCATION_MARKER))
+			throw new IllegalArgumentException();
+		
+		String locationKey = sign.getLine(1);
+		removeLocation(loc.getWorld().getName(), locationKey, loc);
+	}
+	
 /*
 	private String getLocationPath(LOCATIONS l) {
 		String key = "location";
@@ -348,13 +462,16 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		return new InventoryMenu("Spawn Locations", menuItems);
 	}
 	
-	private InventoryMenu getWorldLocMenu() {
+	private InventoryMenu getWorldLocMenu() {	
 		ArrayList<MenuItem> menuItems = new ArrayList<MenuItem>();
+		MyGames.debug(MyGames.getLobbyManager().getGameNames());
 		for (String gameName : MyGames.getLobbyManager().getGameNames()) {
 			Game game = MyGames.getLobbyManager().getGame(gameName);
 			MapLocation[] locs = game.getLocationTypes();
-			if (locs == null || locs.length <= 0)
+			if (locs == null || locs.length <= 0) {
+				MyGames.debug("No locations for " + gameName);
 				continue;
+			}
 			
 			menuItems.add(new Submenu(Utils.namedStack(Material.WORKBENCH, gameName), getWorldLocMenu(game)));
 		}
@@ -370,6 +487,7 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		return new InventoryMenu(game.getName(), menuItems);
 	}
 	
+	@Override
 	public MenuItem getMenuItem(MapLocation wl) {
 		return new MenuItem(getTool(wl), new MenuItemListener() {
 
@@ -381,33 +499,35 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		});
 	}
 	
+	@Override
 	public ItemStack getTool(MapLocation wl) {
 		ItemStack stack = wl.icon();
 		ItemMeta meta = stack.getItemMeta();
 		
 		meta.setDisplayName("World Config Tool: \""+wl.configKey() + '"');
-		meta.setLore(Lists.asList(ChatColor.GREEN + "World Config Tool", new String[]{wl.configKey()}));		
+		meta.setLore(Lists.asList(ChatColor.GREEN + "World Config Tool", new String[]{wl.configKey(), wl.canHaveMultiple() + ""}));		
 		
 		stack.setItemMeta(meta);
 		return stack;
 	}
 
+	@Override
 	public String getKeyFromTool(ItemStack itemStack) {
 		try {
 			if (itemStack == null) {
-				Bukkit.getLogger().info("ItemStack == null");
+				//Bukkit.getLogger().info("ItemStack == null");
 			}
 			
 			ItemMeta meta = itemStack.getItemMeta();
 			
 			if (meta == null) {
-				Bukkit.getLogger().info("meta == null");
+			//	Bukkit.getLogger().info("meta == null");
 			}
 			
 			String displayName = meta.getDisplayName();
 			
 			if (displayName == null) {
-				Bukkit.getLogger().info("displayName == null");
+			//	Bukkit.getLogger().info("displayName == null");
 			}
 			
 			String nameKey = displayName.substring(displayName.indexOf("\"")+1, displayName.lastIndexOf("\""));
@@ -418,6 +538,21 @@ public class SimpleMapConfigManager extends MapConfigManager {
 			return nameKey;
 		} catch (Exception e) {
 			return null;
+		}
+	}
+	
+	@Override
+	public boolean canHaveMultiple(ItemStack itemStack) {
+		try {
+			if (this.getKeyFromTool(itemStack) == null)
+				return false;
+			
+			ItemMeta meta = itemStack.getItemMeta();
+			Boolean multiple = Boolean.parseBoolean(ChatColor.stripColor(meta.getLore().get(2)));
+			
+			return multiple;
+		} catch (Exception e) {
+			return false;
 		}
 	}
 

@@ -2,17 +2,25 @@ package mcjagger.mc.craftgames;
 
 import java.util.Set;
 
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.scoreboard.Scoreboard;
 
+import mcjagger.mc.craftgames.listeners.LobbyListener;
+import mcjagger.mc.craftgames.listeners.WorldConfigListener;
 import mcjagger.mc.craftgames.world.SimpleMapConfigManager;
 import mcjagger.mc.craftgames.world.SimpleMapManager;
 import mcjagger.mc.mygames.Arcade;
 import mcjagger.mc.mygames.ConfigManager;
-import mcjagger.mc.mygames.Game;
 import mcjagger.mc.mygames.LobbyManager;
 import mcjagger.mc.mygames.MetadataManager;
+import mcjagger.mc.mygames.MyGames;
+import mcjagger.mc.mygames.ScoreboardSwitcher;
 import mcjagger.mc.mygames.chat.ChatManager;
+import mcjagger.mc.mygames.game.Game;
 import mcjagger.mc.mygames.world.MapConfigManager;
 import mcjagger.mc.mygames.world.MapManager;
 
@@ -24,22 +32,36 @@ public class PluginArcade extends Arcade {
 	private MetadataManager metadataManager;
 	private MapManager worldManager;
 	private MapConfigManager worldConfigManager;
+	private SimpleScoreboardSwitcher scoreboardSwitcher;
 	
-	
+	private Scoreboard defaultScoreboard;
 	
 	@Override
-	public void onEnable() {
-		super.onEnable();
-		
+	public void onLoad() {
+		super.onLoad();
+
 		chatManager = new SimpleChatManager();
 		configManager = new SimpleConfigManager();
 		lobbyManager = new SimpleLobbyManager();
 		metadataManager = new SimpleMetadataManager();
 		worldManager = new SimpleMapManager();
 		worldConfigManager = new SimpleMapConfigManager();
+		scoreboardSwitcher = new SimpleScoreboardSwitcher();
 	}
 	
-	
+	@Override
+	public void onEnable() {
+		super.onEnable();
+
+		LobbyListener ll = new LobbyListener();
+		Bukkit.getPluginManager().registerEvents(ll, MyGames.getArcade());
+		WorldConfigListener wcl = new WorldConfigListener();
+		Bukkit.getPluginManager().registerEvents(wcl, MyGames.getArcade());
+		
+		((SimpleScoreboardSwitcher)getScoreboardSwitcher()).enable();
+		
+		defaultScoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+	}
 	
 	
 	
@@ -81,32 +103,48 @@ public class PluginArcade extends Arcade {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see mcjagger.mc.mygames.Arcade#getWorldManager()
+	 * @see mcjagger.mc.mygames.Arcade#getMapManager()
 	 */
 	@Override
-	public MapManager getWorldManager() {
+	public MapManager getMapManager() {
 		return worldManager;
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see mcjagger.mc.mygames.Arcade#getWorldConfigManager()
+	 * @see mcjagger.mc.mygames.Arcade#getMapConfigManager()
 	 */
 	@Override
-	public MapConfigManager getWorldConfigManager() {
+	public MapConfigManager getMapConfigManager() {
 		return worldConfigManager;
 	}
 	
-	
+	/*
+	 * (non-Javadoc)
+	 * @see mcjagger.mc.mygames.Arcade#getScoreboardSwitcher()
+	 */
+	@Override
+	public ScoreboardSwitcher getScoreboardSwitcher() {
+		return scoreboardSwitcher;
+	}
 	
 	/*
-	 * 
+	 * (non-Javadoc)
+	 * @see mcjagger.mc.mygames.Arcade#getSpawnLocation()
 	 */
 	@Override
 	public Location getSpawnLocation() {
 		return getConfigManager().getSpawnLocation();
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see mcjagger.mc.mygames.Arcade#getDefaultScoreboard()
+	 */
+	@Override
+	public Scoreboard getDefaultScoreboard() {
+		return defaultScoreboard;
+	}
 	
 	
 	// GAME LOADING / ENABLING
@@ -202,6 +240,21 @@ public class PluginArcade extends Arcade {
 	 */
 	@Override
 	public boolean toLobby(Player player) {
+		player.teleport(MyGames.getSpawnLocation(), TeleportCause.PLUGIN);
+		
+		player.getInventory().clear();
+		player.setGameMode(GameMode.ADVENTURE);
+		player.setAllowFlight(false);
+		player.setFireTicks(0);
+		player.setFlying(false);
+		player.setCanPickupItems(false);
+		player.setExhaustion(0);
+		player.setFoodLevel(20);
+		player.setHealth(20);
+		player.setHealthScaled(false);
+		player.setMaxHealth(20);
+		player.setSaturation(20);
+		
 		return true;
 	}
 	
@@ -211,6 +264,11 @@ public class PluginArcade extends Arcade {
 	 */
 	@Override
 	public boolean toSetup(Player player) {
+		player.getInventory().addItem(MyGames.getArcade().getMapConfigManager().getConfigMenuItem());
+		
+		player.setGameMode(GameMode.CREATIVE);
+		player.setAllowFlight(true);
+		
 		return true;
 	}
 }

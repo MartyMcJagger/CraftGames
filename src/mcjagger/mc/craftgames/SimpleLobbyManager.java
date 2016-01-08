@@ -6,36 +6,22 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
-import mcjagger.mc.craftgames.listeners.LobbyListener;
-import mcjagger.mc.mygames.Game;
 import mcjagger.mc.mygames.LobbyManager;
 import mcjagger.mc.mygames.MyGames;
+import mcjagger.mc.mygames.game.Game;
 
 public class SimpleLobbyManager extends LobbyManager implements Listener {
 	
-	private HashMap<String, Game> games;
-	private HashMap<String, String> aliases;
+	private HashMap<String, Game> games = new HashMap<String, Game>();
+	private HashMap<String, String> aliases = new HashMap<String, String>();
 	
 	public HashMap<UUID, String> lobbys = new HashMap<UUID, String>();
-	
-	private LobbyListener ll;
-	
-	public SimpleLobbyManager() {
-		games = new HashMap<String, Game>();
-		aliases = new HashMap<String, String>();
-		
-		ll = new LobbyListener();
-		Bukkit.getPluginManager().registerEvents(ll, MyGames.getArcade());
-	}	
-	
-	
-	
-	
 	
 	/*
 	 * (non-Javadoc)
@@ -162,6 +148,7 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 	public boolean stopGame(String gameName) {
 		Game game = getGame(gameName);
 		if (game == null) {
+			MyGames.debug("Game \""+gameName+"\" not found!");
 			return false;
 		}	
 		return game.stop();
@@ -212,6 +199,8 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 		else
 			game.removePlayer(player.getUniqueId());
 
+		MyGames.toLobby(player);
+		
 		return true;
 	}
 	
@@ -228,6 +217,11 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 		}
 		
 		lobbys.put(player.getUniqueId(), game.getName());
+		
+		if (game.isRunning())
+			player.sendMessage(MyGames.getChatManager().gameStart(game));
+		else
+			player.sendMessage(MyGames.getChatManager().joinLobbySuccess(game));
 	}
 	
 	/*
@@ -274,8 +268,58 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 			if (player == null)
 				game.removePlayer(uuid);
 			
-			Location location = MyGames.getWorldManager().getRandomSpawn(game);
+			InventoryManager.saveInventory(player, game.getName() + "." + player.getUniqueId());
+			InventoryManager.savePlayerState(player, game.getName() + "." + player.getUniqueId());
+			
+			player.setGameMode(GameMode.SURVIVAL);
+			player.setAllowFlight(false);
+			player.setMaxHealth(20);
+			player.setSaturation(20);
+			player.setHealth(20);
+			player.setFireTicks(0);
+			
+			player.getInventory().clear();
+			
+			player.setScoreboard(game.getScoreboard());
+			MyGames.getArcade().getScoreboardSwitcher().setProvider(uuid, game);
+			
+			game.preparePlayer(player);
+			
+			Location location = game.getSpawnLocation(player);
+			
+			if (location == null) {
+				player.teleport(MyGames.getSpawnLocation(), TeleportCause.PLUGIN);
+				player.sendMessage(MyGames.getChatManager().errorOccurred());
+				
+				continue;
+			}
+			
 			player.teleport(location, TeleportCause.PLUGIN);
+		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see mcjagger.mc.mygames.LobbyManager#retrievePlayers(mcjagger.mc.mygames.Game)
+	 */
+	@Override
+	public void retrievePlayers(Game game) {
+		Location spawnLocation = MyGames.getSpawnLocation();
+		for (UUID uuid : game.getPlayers()) {
+			Player player = Bukkit.getPlayer(uuid);
+			
+			if (player == null)
+			continue;
+			
+			player.getInventory().clear();
+			
+			InventoryManager.applyInventory(player, game.getName() + "." + player.getUniqueId());
+			InventoryManager.applyPlayerState(player, game.getName() + "." + player.getUniqueId());
+			
+			player.setScoreboard(MyGames.getArcade().getDefaultScoreboard());
+			MyGames.getArcade().getScoreboardSwitcher().useDefaultProvider(uuid);
+			
+			player.teleport(spawnLocation, TeleportCause.PLUGIN);
 		}
 	}
 }

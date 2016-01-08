@@ -1,14 +1,13 @@
 package mcjagger.mc.craftgames;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import mcjagger.mc.mygames.Game;
 import mcjagger.mc.mygames.Utils;
 import mcjagger.mc.mygames.chat.ChatManager;
+import mcjagger.mc.mygames.game.Game;
 
 public class SimpleChatManager implements ChatManager {
 	
@@ -99,14 +98,13 @@ public class SimpleChatManager implements ChatManager {
 	}
 	
 	@Override
-	public String gameOver(Game gm, ArrayList<String> winners) {
+	public String gameOver(Game gm, Collection<String> winners) {
 		String message = prefix(gm);
 		
 		if (winners != null) {		
 			if (winners.size() >= 1) {
 				message += Utils.list(winners, ChatColor.GRAY, ChatColor.BLUE);
 				message += ChatColor.GRAY + " took"/* + ((winners.size()==1)?"":"s")*/ + " the victory!";
-				Bukkit.broadcastMessage(message);
 			} else {
 				message += ChatColor.GRAY + "All participants have died... No Winners!";
 			}
@@ -127,5 +125,11 @@ public class SimpleChatManager implements ChatManager {
 	public String actionNotAllowed() {
 		return ChatColor.GRAY.toString()
 				+ ChatColor.ITALIC.toString() + " I'm sorry, but I'm afraid I can't let you do that.";
+	}
+
+	@Override
+	public String errorOccurred() {
+		return prefix() + ChatColor.DARK_RED.toString()
+				+ ChatColor.ITALIC.toString() + " An error has occurred. Incident has been reported to appropriate devs.";
 	}
 }
