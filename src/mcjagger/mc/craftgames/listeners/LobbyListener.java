@@ -1,13 +1,10 @@
 package mcjagger.mc.craftgames.listeners;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -32,12 +29,12 @@ public class LobbyListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	/*@EventHandler
 	public void onInvOpen(InventoryOpenEvent event) {
 		Player player = Bukkit.getPlayer(event.getPlayer().getUniqueId());
 		if (MyGames.getArcade().getMetadataManager().getMode(player) == MetadataManager.LOBBY) {
 
-		event.getPlayer().closeInventory();
+			event.getPlayer().closeInventory();
 			event.setCancelled(true);
 			if (player != null)
 				sendErrorMessage(player);
@@ -54,7 +51,7 @@ public class LobbyListener implements Listener {
 			if (player != null)
 				sendErrorMessage(player);
 		}
-	}
+	}*/
 
 	@EventHandler
 	public void onBlockPlaceEvent(BlockPlaceEvent event) {
@@ -89,6 +86,7 @@ public class LobbyListener implements Listener {
 	}
 
 	public void sendErrorMessage(Player player) {
+		MyGames.debug("LL");
 		player.sendMessage(MyGames.getChatManager().actionNotAllowed());
 	}
 }

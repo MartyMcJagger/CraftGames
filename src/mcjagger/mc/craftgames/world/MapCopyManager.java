@@ -16,16 +16,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import mcjagger.mc.craftgames.InventoryManager;
 import mcjagger.mc.mygames.MyGames;
 import mcjagger.mc.mygames.Utils;
 import mcjagger.mc.mygames.game.Game;
 import mcjagger.mc.mygames.world.location.MapLocation;
 import mcjagger.mc.mygames.world.location.SpawnLocation;
 
-//TODO Override annotations and javadocs
+// TODO Override annotations and javadocs
 public final class MapCopyManager {
 	
 	private HashMap<String, World> dupes = new HashMap<String, World>();
@@ -95,13 +95,13 @@ public final class MapCopyManager {
 		if (!MyGames.getMapConfigManager().getList().contains(key))
 			return null;
 		
-		String mapname = getAvailableName(key);
+		String worldname = getAvailableName(key);
 		
-		copyWorld(key, mapname);
+		copyWorld(key, worldname);
 		
-		World world = Bukkit.getServer().createWorld(new WorldCreator(mapname));
+		World world = Bukkit.getServer().createWorld(new WorldCreator(worldname));
 		world = MyGames.getMapConfigManager().setWorldOptions(world);
-		dupes.put(mapname, world);
+		dupes.put(worldname, world);
 		
 		return world;
 	}
@@ -109,10 +109,11 @@ public final class MapCopyManager {
 	/**
 	 * HOLD ON TIGER! CALLING THIS METHOD COULD DELETE YOUR MAPS!
 	 */
-	public void destroyCopy(String mapname) {
+	public boolean destroyCopy(String mapname) {
 		if (isKey(mapname) || !dupes.containsKey(mapname)) {
+			//Bukkit.broadcastMessage("Almost deleted map " + mapname + "! Tell your devs to be careful with mcjagger.mc.craftgames.WorldCopyManager$destroyCopy(String)!");
 			MyGames.getLogger().severe("Almost deleted map " + mapname + "! Tell your devs to be careful with mcjagger.mc.craftgames.WorldCopyManager$destroyCopy(String)!");
-			return;
+			return false;
 		}
 		
 		World world = dupes.get(mapname);
@@ -120,8 +121,10 @@ public final class MapCopyManager {
 		
 		clearWorld(world);
 		if (unloadWorld(mapname)) {
-			deleteWorld(directory);
+			dupes.remove(mapname);
+			return deleteWorld(directory);
 		}
+		return false;
 	}
 	
 	public static String getWorldReferenceFolder() {
@@ -180,15 +183,18 @@ public final class MapCopyManager {
 	}
 	
 	private void clearWorld(World world) {
-		for (Entity entity : world.getEntities()) {
-			if (entity instanceof Player) {
-				((Player)entity).teleport(MyGames.getSpawnLocation());
-			}
+		for (Player player : world.getPlayers()) {
+			
+			MyGames.toLobby(player);
+			
+			InventoryManager.applyInventory(player, "lobby." + player.getUniqueId());
+			InventoryManager.applyPlayerState(player, "lobby." + player.getUniqueId());
 		}
 	}
 	
 	public boolean unloadWorld(String mapname) {
 		if (Bukkit.getServer().unloadWorld(mapname, false)) {
+			//Bukkit.broadcastMessage("Successfully unloaded " + mapname);
 			MyGames.getLogger().info("Successfully unloaded " + mapname);
 			dupes.remove(mapname);
 			return true;
@@ -211,10 +217,10 @@ public final class MapCopyManager {
 		return path.delete();
 	}
 	
-	//TODO: Add a bunch of checks
+	// TODO: Add a bunch of checks?
 	public boolean isKey(String mapname) {
 		
-		return ! mapname.matches("\\w+_\\d+");
+		return ! mapname.matches("(\\w)+_(\\d)+"); // HOORAH for Regular Expressions!
 		/*
 		try {
 			int endIndex = mapname.lastIndexOf('_');

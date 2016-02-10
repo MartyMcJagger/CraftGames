@@ -14,7 +14,9 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 import mcjagger.mc.mygames.LobbyManager;
 import mcjagger.mc.mygames.MyGames;
+import mcjagger.mc.mygames.Utils;
 import mcjagger.mc.mygames.game.Game;
+import mcjagger.mc.mygames.game.JoinResult;
 
 public class SimpleLobbyManager extends LobbyManager implements Listener {
 	
@@ -135,6 +137,7 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 	public boolean startGame(String gameName) {
 		Game game = getGame(gameName);
 		if (game == null) {
+			MyGames.debug("Game \""+gameName+"\" not found!");
 			return false;
 		}
 		return game.start();
@@ -178,11 +181,23 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 	public boolean addPlayer(Player player, String gameName) {
 		Game game = getGame(gameName);
 		if (game == null) {
+			player.sendMessage(MyGames.getChatManager().gameNotFound(gameName));
 			return false;
 		}
-		else
+		
+		JoinResult joinResult = game.canAddPlayer(player.getUniqueId());
+		
+		if (joinResult == JoinResult.SUCCESS) {
 			game.addPlayer(player.getUniqueId());
 
+			if (game.isRunning())
+				player.sendMessage(MyGames.getChatManager().gameStart(game));
+			else
+				player.sendMessage(MyGames.getChatManager().joinLobbySuccess(game));
+		} else {
+			return false;
+		}
+		
 		return true;
 	}
 	
@@ -196,12 +211,36 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 		if (game == null) {
 			return false;
 		}
-		else
+		else {
 			game.removePlayer(player.getUniqueId());
+			player.sendMessage(MyGames.getChatManager().leaveLobby(game));
+		}
 
 		MyGames.toLobby(player);
 		
 		return true;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see mcjagger.mc.mygames.LobbyManager#addSpectator(org.bukkit.entity.Player, mcjagger.mc.mygames.game.Game)
+	 */
+	@Override
+	public boolean addSpectator(Player player, Game game) {
+		try {
+			UUID tpTo = Utils.getRandomItem(game.getPlayers());
+			Player target = Bukkit.getPlayer(tpTo);
+
+			if (game.isRunning() && target != null) {
+				player.setGameMode(GameMode.SPECTATOR);
+				
+				player.teleport(target, TeleportCause.SPECTATE);
+				player.setSpectatorTarget(target);
+
+				return true;
+			}
+		} catch (Exception ignored) {}
+		return false;
 	}
 	
 	/*
@@ -217,11 +256,6 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 		}
 		
 		lobbys.put(player.getUniqueId(), game.getName());
-		
-		if (game.isRunning())
-			player.sendMessage(MyGames.getChatManager().gameStart(game));
-		else
-			player.sendMessage(MyGames.getChatManager().joinLobbySuccess(game));
 	}
 	
 	/*
@@ -262,14 +296,17 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 	 */
 	@Override
 	public void sendPlayers(Game game) {
+		
+		String mapName = MyGames.getMapManager().getMapName(game);
+		
 		for (UUID uuid : game.getPlayers()) {
 			Player player = Bukkit.getPlayer(uuid);
 			
 			if (player == null)
 				game.removePlayer(uuid);
 			
-			InventoryManager.saveInventory(player, game.getName() + "." + player.getUniqueId());
-			InventoryManager.savePlayerState(player, game.getName() + "." + player.getUniqueId());
+			InventoryManager.saveInventory(player, "lobby." + player.getUniqueId());
+			InventoryManager.savePlayerState(player, "lobby." + player.getUniqueId());
 			
 			player.setGameMode(GameMode.SURVIVAL);
 			player.setAllowFlight(false);
@@ -294,7 +331,11 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 				continue;
 			}
 			
+			player.sendMessage(MyGames.getChatManager().changeMap(game, mapName));
 			player.teleport(location, TeleportCause.PLUGIN);
+			
+			MyGames.getMetadataManager().setInGame(player, game.getName());
+			
 		}
 	}
 	
@@ -304,22 +345,18 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 	 */
 	@Override
 	public void retrievePlayers(Game game) {
-		Location spawnLocation = MyGames.getSpawnLocation();
 		for (UUID uuid : game.getPlayers()) {
-			Player player = Bukkit.getPlayer(uuid);
-			
-			if (player == null)
-			continue;
-			
-			player.getInventory().clear();
-			
-			InventoryManager.applyInventory(player, game.getName() + "." + player.getUniqueId());
-			InventoryManager.applyPlayerState(player, game.getName() + "." + player.getUniqueId());
-			
-			player.setScoreboard(MyGames.getArcade().getDefaultScoreboard());
-			MyGames.getArcade().getScoreboardSwitcher().useDefaultProvider(uuid);
-			
-			player.teleport(spawnLocation, TeleportCause.PLUGIN);
+			try {
+				Player player = Bukkit.getPlayer(uuid);
+				
+				if (player == null)
+					continue;
+				
+				InventoryManager.applyInventory(player, "lobby." + player.getUniqueId());
+				InventoryManager.applyPlayerState(player, "lobby." + player.getUniqueId());
+				
+				Bukkit.broadcastMessage(player.getGameMode().toString());
+			} catch (Exception ignored) {}
 		}
 	}
 }

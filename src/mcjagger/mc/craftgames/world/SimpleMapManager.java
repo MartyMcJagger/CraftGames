@@ -38,6 +38,8 @@ public final class SimpleMapManager extends MapManager {
 	
 	
 	public boolean setMapName(Game game, String name) {
+
+		MyGames.debug("Setting " + game.getName() + " to " + name);
 		
 		String oldWorld = gameWorlds.get(game.getName());
 		
@@ -55,14 +57,20 @@ public final class SimpleMapManager extends MapManager {
 				
 				World copy = wcm.getWorldCopy(key);
 				name = copy.getName();
+			} else {
+				MyGames.debug(name + " is a key.");
 			}
 			
 			gameWorlds.put(game.getName(), name);	
 		}
 		
 		if (oldWorld != null) {
-			if (wcm.isKey(oldWorld))
-				wcm.destroyCopy(oldWorld);
+			if (!wcm.isKey(oldWorld))
+				return wcm.destroyCopy(oldWorld);
+			else
+				Bukkit.broadcastMessage("Uhhhh not a key? " + oldWorld);
+		} else {
+			MyGames.debug("oldWorld null?");
 		}
 		
 		return true;
@@ -70,21 +78,23 @@ public final class SimpleMapManager extends MapManager {
 	
 	public String getMapName(Game game) {
 		String worldName = gameWorlds.get(game.getName());
-
+		MyGames.debug(worldName);
+		
 		if (worldName == null) {
 			worldName = getRandomMap(game);
 			
 			if (worldName == null)
 				throw new IllegalArgumentException();
-			
+
 			setMapName(game, worldName);
 		}
-		
+
 		return MapCopyManager.getKey(worldName);
 	}
 	
 	public World getWorld(Game game) {
 		String worldName = gameWorlds.get(game.getName());
+		MyGames.debug(worldName);
 		
 		if (worldName == null) {
 			worldName = getRandomMap(game);
@@ -94,7 +104,7 @@ public final class SimpleMapManager extends MapManager {
 			
 			setMapName(game, worldName);
 		}
-		
+
 		return Bukkit.getWorld(worldName);
 	}
 	
@@ -205,8 +215,8 @@ public final class SimpleMapManager extends MapManager {
 		return MapManager.listToLoc(MyGames.getMapConfigManager().getLocation(MapCopyManager.getKey(world.getName()), locationKey), world);
 	}
 
-	@Override
-	public String getRandomMap(Game game) {
+	//@Override
+	private String getRandomMap(Game game) {
 		String key = wcm.getRandomKey(game);
 		
 		if (key == null) {
@@ -225,7 +235,16 @@ public final class SimpleMapManager extends MapManager {
 
 	@Override
 	public boolean unloadMap(Game game, boolean removePlayers) {
-		setMapName(game, null);
-		return true;
+		//World world = this.getWorld(game);
+		//String name;
+		//boolean b = false;
+		//if (world != null) {
+		//	name = world.getName();
+		//	b = wcm.unloadWorld(name);
+		//}
+		boolean b = setMapName(game, null);
+		MyGames.debug("Unloading: " + b);
+		return b;
+		//return b;
 	}
 }

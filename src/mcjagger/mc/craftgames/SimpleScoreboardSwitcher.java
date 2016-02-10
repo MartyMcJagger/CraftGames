@@ -30,6 +30,12 @@ public class SimpleScoreboardSwitcher extends ScoreboardSwitcher {
 			for (UUID uuid : providers.keySet()) {
 				
 				Player player = Bukkit.getPlayer(uuid);
+				
+				if (player == null)  {
+					providers.remove(uuid);
+					continue;
+				}
+				
 				ScoreboardProvider provider = providers.get(uuid);
 				
 				if (provider == null || !provider.hasScoreboard())

@@ -1,6 +1,7 @@
 package mcjagger.mc.craftgames;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -11,10 +12,13 @@ import mcjagger.mc.mygames.game.Game;
 
 public class SimpleChatManager implements ChatManager {
 	
-	private static String prefix(Game gm) {
-		return ChatColor.GREEN + "[" + ChatColor.stripColor(gm.getName()) + "]";
+	@Override
+	public String prefix(Game gm) {
+		return ChatColor.GREEN + "[" + ChatColor.stripColor(gm.getName()) + "] ";
 	}
-	private static String prefix() {
+	
+	@Override
+	public String prefix() {
 		return ChatColor.GREEN + "[MyGames]";
 	}
 	
@@ -44,39 +48,77 @@ public class SimpleChatManager implements ChatManager {
 	
 	@Override
 	public String joinLobbySuccess(Game gm) {
-		return prefix(gm)
-				+ ChatColor.GRAY + "You have joined the wait list. "
+		return joinLobbySuccess();
+	}
+	
+	@Override
+	public String joinLobbySuccess() {
+		return ChatColor.GRAY + "You have joined the wait list. "
 				+ "See sidebar for information on when the game will start.";
 	}
 	
 	@Override
 	public String leaveLobby(Game gm) {
-		return prefix(gm)
-				+ ChatColor.GRAY + "You have left the wait list.";
+		return prefix(gm) + leaveLobby();
+	}
+	
+	@Override
+	public String leaveLobby() {
+		return ChatColor.GRAY + "You have left the wait list.";
 	}
 	
 	@Override
 	public String joinLobbyAlreadyJoined(Game gm) {
 		return prefix(gm)
-				+ ChatColor.RED + "You are already registered for this game!";
+				+ ChatColor.RED + joinLobbyAlreadyJoined();
+	}
+	
+	@Override
+	public String joinLobbyAlreadyJoined() {
+		return ChatColor.RED + "You are already registered for this game!";
 	}
 	
 	@Override
 	public String joinLobbyFull(Game gm) {
-		return prefix(gm)
-				+ ChatColor.RED + "This game is full!";
+		return prefix(gm) + joinLobbyFull();
+	}
+	
+	@Override
+	public String joinLobbyFull() {
+		return ChatColor.RED + "This game is full!";
 	}
 	
 	@Override
 	public String joinLobbyIngame(Game gm) {
 		return prefix(gm)
-				+ ChatColor.RED + "You are in another game!";
+				+ joinLobbyIngame();
+	}
+	
+	@Override
+	public String joinLobbyIngame() {
+		return ChatColor.RED + "You are in another game!";
 	}
 	
 	@Override
 	public String joinLobbyInProgress(Game gm) {
 		return prefix(gm)
-				+ ChatColor.RED + "You cannot join this game while it is in session!";
+				+ joinLobbyInProgress();
+	}
+
+	@Override
+	public String joinLobbyInProgress() {
+		return ChatColor.RED + "You cannot join this game while it is in session!";
+	}
+	
+	@Override
+	public String joinLobbyMaxPlayers(Game gm) {
+		return prefix(gm)
+				+ joinLobbyMaxPlayers();
+	}
+
+	@Override
+	public String joinLobbyMaxPlayers() {
+		return ChatColor.RED + "This game has already exceeded maximum players!!";
 	}
 	
 	@Override
@@ -86,9 +128,15 @@ public class SimpleChatManager implements ChatManager {
 	}
 	
 	@Override
-	public String gameHasNoWorlds(Game game) {
+	public String gameHasNoMaps(Game game) {
 		return prefix()
 				+ ChatColor.RED + "Could not begin game \"" + game.getName() + "\": No compatible worlds.";
+	}
+	
+	@Override
+	public String changeMap(Game gm, String mapName) {
+		return prefix()
+				+ ChatColor.GRAY + "Map for " + ChatColor.stripColor(gm.getName()) + " is " + mapName + "!";
 	}
 	
 	@Override
@@ -98,15 +146,25 @@ public class SimpleChatManager implements ChatManager {
 	}
 	
 	@Override
-	public String gameOver(Game gm, Collection<String> winners) {
+	public String gameOver(Game gm, List<Collection<String>> winners) {
 		String message = prefix(gm);
 		
 		if (winners != null) {		
 			if (winners.size() >= 1) {
-				message += Utils.list(winners, ChatColor.GRAY, ChatColor.BLUE);
-				message += ChatColor.GRAY + " took"/* + ((winners.size()==1)?"":"s")*/ + " the victory!";
+				for (int i = 1; i <= winners.size(); ++i) {
+					Collection<String> tier = winners.get(i-1);
+					
+					String tierMsg = i + "th";
+					tierMsg = (i % 10 == 1)?"the victory":tierMsg;
+					tierMsg = (i % 10 == 2)?"2nd":tierMsg;
+					tierMsg = (i % 10 == 3)?"3nd":tierMsg;
+					
+					message += Utils.list(tier, ChatColor.GRAY, ChatColor.BLUE);
+					message += ChatColor.GRAY + " took " + tierMsg + "!";
+					
+				}
 			} else {
-				message += ChatColor.GRAY + "All participants have died... No Winners!";
+				message += ChatColor.GRAY + "No valid participants found... No Winners!";
 			}
 		} else {
 			message += ChatColor.GRAY + "Ended in mysterious circumstances... No Winners!";

@@ -7,6 +7,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Scoreboard;
 
 import mcjagger.mc.craftgames.listeners.LobbyListener;
@@ -63,7 +64,10 @@ public class PluginArcade extends Arcade {
 		defaultScoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 	}
 	
-	
+	@Override()
+	public void onDisable() {
+		super.onDisable();
+	}
 	
 	/*
 	 * (non-Javadoc)
@@ -241,8 +245,13 @@ public class PluginArcade extends Arcade {
 	@Override
 	public boolean toLobby(Player player) {
 		player.teleport(MyGames.getSpawnLocation(), TeleportCause.PLUGIN);
+
+		player.setScoreboard(MyGames.getArcade().getDefaultScoreboard());
+		MyGames.getArcade().getScoreboardSwitcher().useDefaultProvider(player.getUniqueId());
+		MyGames.getMetadataManager().setInLobby(player);
 		
 		player.getInventory().clear();
+		player.getInventory().setArmorContents(new ItemStack[4]);
 		player.setGameMode(GameMode.ADVENTURE);
 		player.setAllowFlight(false);
 		player.setFireTicks(0);
@@ -271,4 +280,5 @@ public class PluginArcade extends Arcade {
 		
 		return true;
 	}
+
 }

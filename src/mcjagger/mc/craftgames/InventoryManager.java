@@ -65,13 +65,16 @@ public class InventoryManager {
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
+			
+			player.getInventory().clear();
+			
 			return false;
 		}
 	}
 	
 	public static boolean savePlayerState(Player player, String path) {
 		
-		FileConfiguration config = getConfig();
+		getConfig();
 		
 		try { save(config, path + "." + GAMEMODE_PATH, player.getGameMode()); } catch (Exception e) {}
 		try { save(config, path + "." + ALLOW_FLIGHT_PATH, player.getAllowFlight()); } catch (Exception e) {}
@@ -90,20 +93,26 @@ public class InventoryManager {
 	
 	public static boolean applyPlayerState(Player player, String path) {
 		
+		getConfig();
 		
-		try { player.setGameMode((GameMode) 	load(config,  	path + "." + GAMEMODE_PATH)); } catch (Exception e) {}
-		try { player.setAllowFlight((Boolean)	load(config, 	path + "." + ALLOW_FLIGHT_PATH)); } catch (Exception e) {}
-		try { player.setMaxHealth((Double)  	load(config,	path + "." + MAX_HEALTH_PATH)); } catch (Exception e) {}
-		try { player.setHealth((Double)   	load(config,	path + "." + HEALTH_PATH)); } catch (Exception e) {}
-		try { player.setSaturation((Float)  	load(config,	path + "." + SATURATION_PATH)); } catch (Exception e) {}
-		try { player.setMaximumAir((Integer)	load(config,	path + "." + MAX_AIR_PATH)); } catch (Exception e) {}
-		try { player.setTotalExperience((Integer)
-										load(config,	path + "." + XP_PATH )); } catch (Exception e) {}
-		
-		try { MyGames.getMetadataManager().setMode(player,
-							(Integer)	load(config, 	path + "." + PLAYMODE_PATH)); } catch (Exception e) {}
-		
-		return true;
+		if (config.contains(path)) {
+			try { player.setGameMode((GameMode) 	load(config,  	path + "." + GAMEMODE_PATH)); } catch (Exception e) {MyGames.debug("Failed to set GameMode!");}
+			try { player.setAllowFlight((Boolean)	load(config, 	path + "." + ALLOW_FLIGHT_PATH)); } catch (Exception e) {MyGames.debug("Failed to set AllowFlight!");}
+			try { player.setMaxHealth((Double)  	load(config,	path + "." + MAX_HEALTH_PATH)); } catch (Exception e) {MyGames.debug("Failed to set GameMode!");}
+			try { player.setHealth((Double)   	load(config,	path + "." + HEALTH_PATH)); } catch (Exception e) {MyGames.debug("Failed to set Health!");}
+			try { player.setSaturation((Float)  	load(config,	path + "." + SATURATION_PATH)); } catch (Exception e) {MyGames.debug("Failed to set Saturation!");}
+			try { player.setMaximumAir((Integer)	load(config,	path + "." + MAX_AIR_PATH)); } catch (Exception e) {MyGames.debug("Failed to set MaximumAir!");}
+			try { player.setTotalExperience((Integer)
+											load(config,	path + "." + XP_PATH )); } catch (Exception e) {MyGames.debug("Failed to set Experience!");}
+			
+			try { MyGames.getMetadataManager().setMode(player,
+								(Integer)	load(config, 	path + "." + PLAYMODE_PATH)); } catch (Exception e) {MyGames.debug("Failed to set MetaData!");}
+			
+			return true;
+		} else {
+			MyGames.toLobby(player);
+			return false;
+		}
 	}
 	
 	private static void save(FileConfiguration config, String path, Object object) {

@@ -26,10 +26,10 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import mcjagger.mc.mygames.MetadataManager;
 import mcjagger.mc.mygames.MyGames;
 import mcjagger.mc.mygames.event.GameUpdateEvent;
 import mcjagger.mc.mygames.game.Game;
+import mcjagger.mc.mygames.game.JoinResult;
 
 public class SignListener implements Listener {
 	
@@ -220,11 +220,13 @@ public class SignListener implements Listener {
 				if (gm == null)
 					return;
 				
-				if ((!gm.isRunning()) && (gm.canAddPlayer(event.getPlayer().getUniqueId()))
-						&& MyGames.getMetadataManager().getMode(event.getPlayer()) != MetadataManager.INGAME) {
+				JoinResult joinResult = gm.canAddPlayer(event.getPlayer().getUniqueId());
+				
+				if (joinResult == JoinResult.SUCCESS) {
 					MyGames.getLobbyManager().addPlayer(event.getPlayer(), gm.getName());
+				} else {
+					event.getPlayer().sendMessage(joinResult.prefixedMessage(gm));
 				}
-				//}
 			}
 		}
 	}

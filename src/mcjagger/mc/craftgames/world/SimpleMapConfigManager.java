@@ -94,23 +94,29 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		return new ArrayList<String>(list);
 	}
 
+	@Override
 	public World setWorldOptions(World world) {
-
+		
 		world.setAutoSave(false);
+		world.setKeepSpawnInMemory(false);
 		world.setDifficulty(Difficulty.HARD);
 		world.setPVP(true);
-
+		
 		world.setAnimalSpawnLimit(0);
 		world.setMonsterSpawnLimit(0);
 		world.setWaterAnimalSpawnLimit(0);
 		world.setAmbientSpawnLimit(0);
 		world.setSpawnFlags(false, false);
-
-		for (Entity entity : world.getEntities())
-			if (entity instanceof LivingEntity)
-				if (!(entity instanceof Player))
+		
+		for (Entity entity : world.getEntities()) {
+			if (entity instanceof LivingEntity) {
+				if (!(entity instanceof Player)) {
+					((LivingEntity) entity).setHealth(0);
 					entity.remove();
-
+				}
+			}
+		}
+		
 		return world;
 	}
 	public void loadConfigs() {
@@ -181,7 +187,7 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		}
 	}
 
-	// TODO: return false
+	// TODO: return false?
 	public boolean saveMapToReferences(String key) {
 		MapCopyManager.saveWorldToReferences(key);;
 		return true;
