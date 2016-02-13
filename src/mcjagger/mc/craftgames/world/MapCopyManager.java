@@ -72,9 +72,13 @@ public final class MapCopyManager {
 					return false;
 			}
 		} else {
-			MyGames.debug(key + " > McM 71");
-			if (MyGames.getMapConfigManager().getConfig(key).getConfigurationSection("location.spawn").getKeys(false).isEmpty()) {
-				MyGames.debug("empty");
+			try {
+				if (MyGames.getMapConfigManager().getConfig(key)
+						.getConfigurationSection("location.spawn")
+						.getKeys(false).isEmpty()) {
+					return false;
+				}
+			} catch (Exception ignored) {
 				return false;
 			}
 		}

@@ -43,6 +43,8 @@ public class SimpleScoreboardSwitcher extends ScoreboardSwitcher {
 				
 				Scoreboard sb = provider.nextScoreboard();
 				player.setScoreboard(sb);
+				
+				MyGames.debug("New Scoreboard?");
 				/*
 				Objective obj = sb.getObjective(DisplaySlot.SIDEBAR);
 				Objective old = getObjective(player);

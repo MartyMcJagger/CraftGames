@@ -27,7 +27,7 @@ public class WorldListener implements Listener {
 
 	@EventHandler
 	public void onEntitySpawn(CreatureSpawnEvent event) {
-		if (MapCopyManager.event.getSpawnReason() == SpawnReason.NATURAL
+		if (event.getSpawnReason() == SpawnReason.NATURAL
 				|| event.getSpawnReason() == SpawnReason.CHUNK_GEN)
 			event.setCancelled(true);
 	}
