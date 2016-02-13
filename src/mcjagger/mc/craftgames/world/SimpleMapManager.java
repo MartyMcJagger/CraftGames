@@ -56,6 +56,9 @@ public final class SimpleMapManager extends MapManager {
 					return false;
 				
 				World copy = wcm.getWorldCopy(key);
+				
+				copy.setThundering(true);
+				
 				name = copy.getName();
 			} else {
 				MyGames.debug(name + " is a key.");
@@ -93,6 +96,7 @@ public final class SimpleMapManager extends MapManager {
 	}
 	
 	public World getWorld(Game game) {
+		MyGames.debug("GameWorlds: " + gameWorlds);
 		String worldName = gameWorlds.get(game.getName());
 		MyGames.debug(worldName);
 		

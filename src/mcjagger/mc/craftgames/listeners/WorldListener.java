@@ -7,10 +7,13 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.WorldEvent;
 
+import mcjagger.mc.mygames.MyGames;
+import mcjagger.mc.mygames.world.MapConfigManager;
+
 public class WorldListener implements Listener {
 
 	@EventHandler
-	public void onTimeChange(WeatherChangeEvent event) {
+	public void onWeatherChange(WeatherChangeEvent event) {
 		if (event.toWeatherState())
 			event.setCancelled(true);
 		event.getWorld().setStorm(false);
@@ -24,7 +27,7 @@ public class WorldListener implements Listener {
 
 	@EventHandler
 	public void onEntitySpawn(CreatureSpawnEvent event) {
-		if (event.getSpawnReason() == SpawnReason.NATURAL
+		if (MapCopyManager.event.getSpawnReason() == SpawnReason.NATURAL
 				|| event.getSpawnReason() == SpawnReason.CHUNK_GEN)
 			event.setCancelled(true);
 	}

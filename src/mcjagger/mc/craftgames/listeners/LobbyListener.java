@@ -86,7 +86,6 @@ public class LobbyListener implements Listener {
 	}
 
 	public void sendErrorMessage(Player player) {
-		MyGames.debug("LL");
 		player.sendMessage(MyGames.getChatManager().actionNotAllowed());
 	}
 }

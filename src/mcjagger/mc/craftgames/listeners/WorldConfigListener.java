@@ -1,21 +1,6 @@
 package mcjagger.mc.craftgames.listeners;
 
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.BlockIterator;
-
-import mcjagger.mc.craftgames.world.SimpleMapConfigManager;
-import mcjagger.mc.mygames.MetadataManager;
-import mcjagger.mc.mygames.MyGames;
-import mcjagger.mc.mygames.inventorymenu.InventoryMenu;
 
 public class WorldConfigListener implements Listener {
 
@@ -24,7 +9,7 @@ public class WorldConfigListener implements Listener {
 		if (setBlock(event.getPlayer(), event.getItemInHand(), event.getBlock())) {
 			event.setCancelled(true);
 		}
-	}*/
+	}
 	
 	@EventHandler
 	public void onPlayerClickTool(PlayerInteractEvent event) {
@@ -105,6 +90,6 @@ public class WorldConfigListener implements Listener {
 			e.printStackTrace();
 		}
 		return false;
-	}
+	}*/
 
 }

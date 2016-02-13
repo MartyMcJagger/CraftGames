@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -231,13 +232,13 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 			UUID tpTo = Utils.getRandomItem(game.getPlayers());
 			Player target = Bukkit.getPlayer(tpTo);
 
-			if (game.isRunning() && target != null) {
-				player.setGameMode(GameMode.SPECTATOR);
-				
-				player.teleport(target, TeleportCause.SPECTATE);
+			player.setGameMode(GameMode.SPECTATOR);
+			
+			if (target != null) {
 				player.setSpectatorTarget(target);
-
 				return true;
+			} else {
+				return false;
 			}
 		} catch (Exception ignored) {}
 		return false;

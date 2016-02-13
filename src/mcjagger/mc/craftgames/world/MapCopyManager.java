@@ -28,13 +28,17 @@ import mcjagger.mc.mygames.world.location.SpawnLocation;
 // TODO Override annotations and javadocs
 public final class MapCopyManager {
 	
-	private HashMap<String, World> dupes = new HashMap<String, World>();
+	private static HashMap<String, World> dupes = new HashMap<String, World>();
 	
 	public void unloadAll() {
 		Set<String> keySet = dupes.keySet();
 		for (String string : keySet) {
 			destroyCopy(string);
 		}
+	}
+	
+	public static boolean hasWorld(World world) {
+		return dupes.values().contains(world);
 	}
 	
 	public void addToList(String string) {

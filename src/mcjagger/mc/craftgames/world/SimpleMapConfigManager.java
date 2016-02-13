@@ -11,6 +11,7 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
@@ -97,6 +98,8 @@ public class SimpleMapConfigManager extends MapConfigManager {
 	@Override
 	public World setWorldOptions(World world) {
 		
+		MyGames.debug("Setting config for " + world.getName());
+		
 		world.setAutoSave(false);
 		world.setKeepSpawnInMemory(false);
 		world.setDifficulty(Difficulty.HARD);
@@ -108,15 +111,33 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		world.setAmbientSpawnLimit(0);
 		world.setSpawnFlags(false, false);
 		
-		for (Entity entity : world.getEntities()) {
-			if (entity instanceof LivingEntity) {
-				if (!(entity instanceof Player)) {
-					((LivingEntity) entity).setHealth(0);
-					entity.remove();
-				}
+		
+		// GAME RULES
+		
+		// MOB
+		world.setGameRuleValue("doMobSpawning", "false");
+		world.setGameRuleValue("mobGriefing", "false");
+		
+		// WORLD
+		world.setGameRuleValue("doDaylightCycle", "false");
+		world.setGameRuleValue("doFireTick", "false");
+		
+		world.save();
+		
+		for (LivingEntity entity : world.getLivingEntities()) {
+			if (!(entity instanceof Player)) {
+				world.getLivingEntities().remove(entity);
+				
+				Chunk chunk = entity.getWorld().getChunkAt(entity.getLocation());
+				chunk.load();
+				
+				entity.setHealth(0d);
+				entity.remove();
+				MyGames.debug("Removed: " + entity.getType());
 			}
 		}
-		
+
+		MyGames.debug("Success!");
 		return world;
 	}
 	public void loadConfigs() {

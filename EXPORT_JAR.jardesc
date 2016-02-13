@@ -13,7 +13,6 @@
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
         <file path="/CraftGames/.project"/>
         <file path="/CraftGames/plugin.yml"/>
-        <file path="/CraftGames/EXPORT_JAR.jardesc"/>
         <javaElement handleIdentifier="=CraftGames/res"/>
         <javaElement handleIdentifier="=MyGames"/>
         <javaElement handleIdentifier="=CraftGames/src"/>
