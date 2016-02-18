@@ -177,6 +177,7 @@ public class SignListener implements Listener {
 
 		Game gm = MyGames.getArcade().getGame(gameName);
 		if (gm == null) {
+			MyGames.debug("Couldn't find game for sign: " + gameName);
 			return;
 		}
 		gameName = gm.getName();

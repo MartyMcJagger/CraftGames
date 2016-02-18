@@ -196,6 +196,7 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 			else
 				player.sendMessage(MyGames.getChatManager().joinLobbySuccess(game));
 		} else {
+			player.sendMessage(joinResult.prefixedMessage(game));
 			return false;
 		}
 		

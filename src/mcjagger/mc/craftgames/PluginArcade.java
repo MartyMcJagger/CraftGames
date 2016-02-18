@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Scoreboard;
 
 import mcjagger.mc.craftgames.listeners.LobbyListener;
+import mcjagger.mc.craftgames.listeners.SignListener;
 import mcjagger.mc.craftgames.listeners.WorldConfigListener;
 import mcjagger.mc.craftgames.world.SimpleMapConfigManager;
 import mcjagger.mc.craftgames.world.SimpleMapManager;
@@ -22,6 +23,8 @@ import mcjagger.mc.mygames.MyGames;
 import mcjagger.mc.mygames.ScoreboardSwitcher;
 import mcjagger.mc.mygames.chat.ChatManager;
 import mcjagger.mc.mygames.game.Game;
+import mcjagger.mc.mygames.weapon.ItemWeapon;
+import mcjagger.mc.mygames.weapon.WeaponListener;
 import mcjagger.mc.mygames.world.MapConfigManager;
 import mcjagger.mc.mygames.world.MapManager;
 
@@ -58,6 +61,10 @@ public class PluginArcade extends Arcade {
 		Bukkit.getPluginManager().registerEvents(ll, MyGames.getArcade());
 		WorldConfigListener wcl = new WorldConfigListener();
 		Bukkit.getPluginManager().registerEvents(wcl, MyGames.getArcade());
+		WeaponListener wl = new WeaponListener();
+		Bukkit.getPluginManager().registerEvents(wl, MyGames.getArcade());
+		SignListener sl = new SignListener();
+		Bukkit.getPluginManager().registerEvents(sl, MyGames.getArcade());
 		
 		((SimpleScoreboardSwitcher)getScoreboardSwitcher()).enable();
 		
@@ -237,15 +244,18 @@ public class PluginArcade extends Arcade {
 	public Game getCurrentGame(Player player) {
 		return getGame(getLobbyManager().getCurrentGame(player));
 	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 * @see mcjagger.mc.mygames.Arcade#toLobby(org.bukkit.entity.Player)
+	 * @see mcjagger.mc.mygames.Arcade#toLobby(org.bukkit.entity.Player, boolean)
 	 */
 	@Override
-	public boolean toLobby(Player player) {
-		player.teleport(MyGames.getSpawnLocation(), TeleportCause.PLUGIN);
-
+	public boolean toLobby(Player player, boolean teleport) {
+		if (teleport)
+			player.teleport(MyGames.getSpawnLocation(), TeleportCause.PLUGIN);
+		
+		MyGames.debug("Sending to lobby...");
+		
 		player.setScoreboard(MyGames.getArcade().getDefaultScoreboard());
 		MyGames.getArcade().getScoreboardSwitcher().useDefaultProvider(player.getUniqueId());
 		MyGames.getMetadataManager().setInLobby(player);
@@ -263,8 +273,19 @@ public class PluginArcade extends Arcade {
 		player.setHealthScaled(false);
 		player.setMaxHealth(20);
 		player.setSaturation(20);
+
+		player.getInventory().addItem(ItemWeapon.createWeapon(GameChooser.class));
 		
 		return true;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see mcjagger.mc.mygames.Arcade#toLobby(org.bukkit.entity.Player)
+	 */
+	@Override
+	public boolean toLobby(Player player) {
+		return toLobby(player, true);
 	}
 	
 	/*

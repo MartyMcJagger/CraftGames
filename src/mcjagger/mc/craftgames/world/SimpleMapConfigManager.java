@@ -22,7 +22,6 @@ import org.bukkit.block.Sign;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -38,6 +37,7 @@ import mcjagger.mc.mygames.inventorymenu.MenuItem;
 import mcjagger.mc.mygames.inventorymenu.MenuItemListener;
 import mcjagger.mc.mygames.inventorymenu.Submenu;
 import mcjagger.mc.mygames.world.MapConfigManager;
+import mcjagger.mc.mygames.world.MapManager;
 import mcjagger.mc.mygames.world.location.MapLocation;
 import mcjagger.mc.mygames.world.location.SpawnLocation;
 
@@ -340,6 +340,27 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		}
 		
 		saveConfig(key);
+	}
+	
+	@Override
+	public List<Location> getLocations(World world, String locationKey) {
+		String key = MapCopyManager.getKey(world.getName());
+		String path = "location." + locationKey;
+		
+		ArrayList<Location> ret = new ArrayList<Location>();
+		FileConfiguration config = getConfig(key);
+		
+		if (config.isConfigurationSection(path)) {
+			ConfigurationSection sect = config.getConfigurationSection(path);
+			for (String subkey : sect.getKeys(false)) {
+				ret.add(MapManager.listToLoc(sect.getDoubleList(subkey), world));
+			}
+		}
+		else {
+			ret.add(MapManager.listToLoc(config.getDoubleList(path), world));
+		}
+		
+		return ret;
 	}
 	
 	@Override

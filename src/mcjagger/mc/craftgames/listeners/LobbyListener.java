@@ -82,6 +82,7 @@ public class LobbyListener implements Listener {
 	public void onRespawnEvent(PlayerRespawnEvent event) {
 		if (MyGames.getArcade().getMetadataManager().getMode(event.getPlayer()) == MetadataManager.LOBBY) {
 			event.setRespawnLocation(MyGames.getSpawnLocation());
+			MyGames.toLobby(event.getPlayer(), false);
 		}
 	}
 
