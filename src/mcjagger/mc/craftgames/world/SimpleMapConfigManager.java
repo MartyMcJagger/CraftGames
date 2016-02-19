@@ -136,6 +136,16 @@ public class SimpleMapConfigManager extends MapConfigManager {
 				MyGames.debug("Removed: " + entity.getType());
 			}
 		}
+		
+		ConfigurationSection config = getConfig(MapCopyManager.getKey(world.getName()));
+		
+		for (String key : config.getKeys(true)) {
+			try {
+				Location loc = MapManager.listToLoc(config.getDoubleList(key), world);
+				if (((Sign)loc.getBlock().getState()).getLine(0).equals("MapLocation"))
+					loc.getBlock().setType(Material.AIR);
+			} catch (Exception ignored) {}
+		}
 
 		MyGames.debug("Success!");
 		return world;

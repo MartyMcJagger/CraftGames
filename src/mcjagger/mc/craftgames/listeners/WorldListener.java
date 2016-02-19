@@ -28,8 +28,10 @@ public class WorldListener implements Listener {
 	@EventHandler
 	public void onEntitySpawn(CreatureSpawnEvent event) {
 		if (event.getSpawnReason() == SpawnReason.NATURAL
-				|| event.getSpawnReason() == SpawnReason.CHUNK_GEN)
+				|| event.getSpawnReason() == SpawnReason.CHUNK_GEN) {
 			event.setCancelled(true);
+			event.getEntity().remove();
+		}
 	}
 
 }

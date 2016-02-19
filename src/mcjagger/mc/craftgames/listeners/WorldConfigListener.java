@@ -34,7 +34,7 @@ public class WorldConfigListener implements Listener {
 		try {
 			Block clicked = event.getClickedBlock();
 			
-			if ((clicked != null) && (event.getAction() == Action.RIGHT_CLICK_BLOCK)) {
+			if ((clicked != null) && (event.getAction() == Action.RIGHT_CLICK_BLOCK) || (event.getAction() == Action.LEFT_CLICK_BLOCK)) {
 				Block relative = clicked.getRelative(event.getBlockFace());
 				location = relative.getLocation();
 			} else {

@@ -56,6 +56,8 @@ public class PluginArcade extends Arcade {
 	@Override
 	public void onEnable() {
 		super.onEnable();
+		
+		ItemWeapon.createWeapon(GameChooser.class);
 
 		LobbyListener ll = new LobbyListener();
 		Bukkit.getPluginManager().registerEvents(ll, MyGames.getArcade());

@@ -41,6 +41,7 @@ public class GameChooser extends ItemWeapon implements MenuItemListener {
 	public void melee(Player player, Player victim,
 			EntityDamageByEntityEvent event) {
 		openMenu(player);
+		event.setCancelled(true);
 	}
 
 	@Override
