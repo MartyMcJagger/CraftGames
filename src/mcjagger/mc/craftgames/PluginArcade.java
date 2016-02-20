@@ -256,8 +256,6 @@ public class PluginArcade extends Arcade {
 		if (teleport)
 			player.teleport(MyGames.getSpawnLocation(), TeleportCause.PLUGIN);
 		
-		MyGames.debug("Sending to lobby...");
-		
 		player.setScoreboard(MyGames.getArcade().getDefaultScoreboard());
 		MyGames.getArcade().getScoreboardSwitcher().useDefaultProvider(player.getUniqueId());
 		MyGames.getMetadataManager().setInLobby(player);

@@ -2,6 +2,7 @@ package mcjagger.mc.craftgames;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.StringJoiner;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -147,7 +148,8 @@ public class SimpleChatManager implements ChatManager {
 	
 	@Override
 	public String gameOver(Game gm, List<Collection<String>> winners) {
-		String message = prefix(gm);
+		StringJoiner sj = new StringJoiner(" ");
+		sj.add(prefix(gm));
 		
 		if (winners != null) {		
 			if (winners.size() >= 1) {
@@ -159,18 +161,18 @@ public class SimpleChatManager implements ChatManager {
 					tierMsg = (i % 10 == 2)?"2nd":tierMsg;
 					tierMsg = (i % 10 == 3)?"3nd":tierMsg;
 					
-					message += Utils.list(tier, ChatColor.GRAY, ChatColor.BLUE);
-					message += ChatColor.GRAY + " took " + tierMsg + "!";
+					sj.add(Utils.list(tier, ChatColor.GRAY, ChatColor.BLUE).toString());
+					sj.add((ChatColor.GRAY + " took " + tierMsg + "!").toString());
 					
 				}
 			} else {
-				message += ChatColor.GRAY + "No valid participants found... No Winners!";
+				sj.add(ChatColor.GRAY + "No valid participants found... No Winners!");
 			}
 		} else {
-			message += ChatColor.GRAY + "Ended in mysterious circumstances... No Winners!";
+			sj.add(ChatColor.GRAY + "Ended in mysterious circumstances... No Winners!");
 		}
 		
-		return (message);
+		return sj.toString();
 	}
 	
 	@Override

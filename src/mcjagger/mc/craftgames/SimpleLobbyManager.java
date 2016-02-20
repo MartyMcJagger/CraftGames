@@ -8,7 +8,6 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -353,11 +352,15 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 				
 				if (player == null)
 					continue;
+
+				MyGames.getMetadataManager().setInLobby(player);
+				lobbys.remove(player.getUniqueId());
 				
-				InventoryManager.applyInventory(player, "lobby." + player.getUniqueId());
-				InventoryManager.applyPlayerState(player, "lobby." + player.getUniqueId());
+				MyGames.toLobby(player);
 				
-				Bukkit.broadcastMessage(player.getGameMode().toString());
+				//InventoryManager.applyInventory(player, "lobby." + player.getUniqueId());
+				//InventoryManager.applyPlayerState(player, "lobby." + player.getUniqueId());
+				
 			} catch (Exception ignored) {}
 		}
 	}

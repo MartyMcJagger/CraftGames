@@ -19,7 +19,6 @@ public class SimpleScoreboardSwitcher extends ScoreboardSwitcher {
 	private HashMap<UUID, ScoreboardProvider> providers = new HashMap<UUID, ScoreboardProvider>();
 	
 	public void enable() {
-		Bukkit.broadcastMessage("Enabled ScoreboardSwitcher");
 		Bukkit.getScheduler().runTaskTimer(MyGames.getArcade(), switcher, 20 * 5, 20 * 5);
 	}
 	
