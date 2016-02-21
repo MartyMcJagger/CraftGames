@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -65,10 +66,21 @@ public class WorldConfigListener implements Listener {
 	public void blockBroken(BlockBreakEvent event) {
 		SimpleMapConfigManager smcm = (SimpleMapConfigManager) MyGames.getMapConfigManager();
 		if (smcm.isMapLocation(event.getBlock().getLocation())) {
-			MyGames.debug("Is a MapLocation sign.");
+			//MyGames.debug("Is a MapLocation sign.");
 			smcm.mapLocationBroken(event.getBlock().getLocation());
 		} else {
-			MyGames.debug("Not a MapLocation sign.");
+			//MyGames.debug("Not a MapLocation sign.");
+			
+		}
+	}
+	
+	@EventHandler
+	public void blockBroken(BlockPhysicsEvent event) {
+		SimpleMapConfigManager smcm = (SimpleMapConfigManager) MyGames.getMapConfigManager();
+		if (smcm.isMapLocation(event.getBlock().getLocation())) {
+			event.setCancelled(true);
+		} else {
+			//MyGames.debug("Not a MapLocation sign.");
 			
 		}
 	}

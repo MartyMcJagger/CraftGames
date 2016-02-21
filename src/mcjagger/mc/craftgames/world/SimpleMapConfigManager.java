@@ -111,7 +111,6 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		world.setAmbientSpawnLimit(0);
 		world.setSpawnFlags(false, false);
 		
-		
 		// GAME RULES
 		
 		// MOB
@@ -122,18 +121,22 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		world.setGameRuleValue("doDaylightCycle", "false");
 		world.setGameRuleValue("doFireTick", "false");
 		
-		world.save();
-		
-		for (LivingEntity entity : world.getLivingEntities()) {
+		List<LivingEntity> toRemove = new ArrayList<LivingEntity>(world.getLivingEntities());
+		while (!toRemove.isEmpty()) {
+			LivingEntity entity = toRemove.remove(0);
 			if (!(entity instanceof Player)) {
 				world.getLivingEntities().remove(entity);
 				
 				Chunk chunk = entity.getWorld().getChunkAt(entity.getLocation());
-				chunk.load();
+				chunk.load(false);
+				world.loadChunk(chunk);
 				
 				entity.setHealth(0d);
 				entity.remove();
+				world.getEntities().remove(entity);
+				
 				MyGames.debug("Removed: " + entity.getType());
+				
 			}
 		}
 		
@@ -147,6 +150,8 @@ public class SimpleMapConfigManager extends MapConfigManager {
 			} catch (Exception ignored) {}
 		}
 
+		world.save();
+		
 		MyGames.debug("Success!");
 		return world;
 	}
@@ -393,7 +398,6 @@ public class SimpleMapConfigManager extends MapConfigManager {
 	public void markMapLocation(String configKey, boolean multiple, Location loc) {
 		Block block = loc.getBlock();
 		
-		block.setType(Material.SIGN_POST);
 		block.setType(Material.SIGN_POST, false);
 		
 		Sign sign = (Sign) block.getState();

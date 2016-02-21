@@ -51,6 +51,7 @@ public class SimpleMetadataManager extends MetadataManager {
 			return false;
 
 		player.setMetadata(MODE, new FixedMetadataValue(MyGames.getArcade(), LOBBY));
+		player.removeMetadata(GAME, MyGames.getArcade());
 		player.setMetadata(GAME, new FixedMetadataValue(MyGames.getArcade(), null));
 		
 		return true;

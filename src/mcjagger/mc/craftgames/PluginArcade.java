@@ -262,7 +262,7 @@ public class PluginArcade extends Arcade {
 		
 		player.getInventory().clear();
 		player.getInventory().setArmorContents(new ItemStack[4]);
-		player.setGameMode(GameMode.ADVENTURE);
+		player.setGameMode(GameMode.CREATIVE);
 		player.setAllowFlight(false);
 		player.setFireTicks(0);
 		player.setFlying(false);

@@ -81,7 +81,7 @@ public final class SimpleMapManager extends MapManager {
 	
 	public String getMapName(Game game) {
 		String worldName = gameWorlds.get(game.getName());
-		MyGames.debug(worldName);
+		//MyGames.debug(worldName);
 		
 		if (worldName == null) {
 			worldName = getRandomMap(game);
@@ -96,9 +96,9 @@ public final class SimpleMapManager extends MapManager {
 	}
 	
 	public World getWorld(Game game) {
-		MyGames.debug("GameWorlds: " + gameWorlds);
+		//MyGames.debug("GameWorlds: " + gameWorlds);
 		String worldName = gameWorlds.get(game.getName());
-		MyGames.debug(worldName);
+		//MyGames.debug(worldName);
 		
 		if (worldName == null) {
 			worldName = getRandomMap(game);
