@@ -1,7 +1,10 @@
 package mcjagger.mc.craftgames;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,13 +20,16 @@ import mcjagger.mc.mygames.MyGames;
 import mcjagger.mc.mygames.Utils;
 import mcjagger.mc.mygames.game.Game;
 import mcjagger.mc.mygames.game.JoinResult;
+import org.bukkit.ChatColor;
 
 public class SimpleLobbyManager extends LobbyManager implements Listener {
 	
 	private HashMap<String, Game> games = new HashMap<String, Game>();
 	private HashMap<String, String> aliases = new HashMap<String, String>();
 	
-	public HashMap<UUID, String> lobbys = new HashMap<UUID, String>();
+	private HashMap<UUID, String> lobbys = new HashMap<UUID, String>();
+	
+	private HashMap<String, GameStatusScoreboard> statusSidebar = new HashMap<String, GameStatusScoreboard>(); 
 	
 	/*
 	 * (non-Javadoc)
@@ -31,6 +37,10 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 	 */
 	@Override
 	public Game getGame(String game) {
+		
+		if (game == null)
+			return null;
+		
 		if (aliases.containsKey(game.toLowerCase()))
 			game = aliases.get(game.toLowerCase());
 		
@@ -64,6 +74,8 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 					this.aliases.put(alias.toLowerCase(), game.getName().toLowerCase());
 		}
 		
+		statusSidebar.put(game.getName(), new GameStatusScoreboard(game));
+		
 		return true;
 	}
 	
@@ -75,6 +87,7 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 	public boolean removeGame(Game gm) {
 		if (games.containsKey(gm.getName().toLowerCase())) {
 			games.remove(gm.getName().toLowerCase());
+			statusSidebar.remove(gm.getName());
 			return true;
 		}
 		return false;
@@ -189,11 +202,14 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 		
 		if (joinResult == JoinResult.SUCCESS) {
 			game.addPlayer(player.getUniqueId());
-
-			if (game.isRunning())
+			MyGames.getArcade().getScoreboardSwitcher().setProvider(player.getUniqueId(), statusSidebar.get(game.getName()));
+			
+			if (game.isRunning()) {
 				player.sendMessage(MyGames.getChatManager().gameStart(game));
-			else
+			} else {
 				player.sendMessage(MyGames.getChatManager().joinLobbySuccess(game));
+				
+			}
 		} else {
 			player.sendMessage(joinResult.prefixedMessage(game));
 			return false;
@@ -236,9 +252,13 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 			
 			if (target != null) {
 				player.setSpectatorTarget(target);
+				target.setPassenger(player);
+				player.sendMessage(ChatColor.GREEN + "You are now spectating " + target.getDisplayName());
 				return true;
 			} else {
-				return false;
+				player.teleport(MyGames.getMapManager().getRandomSpawn(game));
+				player.sendMessage(ChatColor.GREEN + "You are now spectating.");
+				return true;
 			}
 		} catch (Exception ignored) {}
 		return false;
@@ -256,7 +276,16 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 				getGame(gameName).removePlayer(player.getUniqueId());
 		}
 		
+		if (game.isRunning()) {
+			sendPlayer(player, game);
+		}
+		
 		lobbys.put(player.getUniqueId(), game.getName());
+		
+		if (game.playerCount() >= game.minPlayers) {
+			statusSidebar.get(game.getName()).startCountdown();
+		}
+		
 	}
 	
 	/*
@@ -297,47 +326,54 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 	 */
 	@Override
 	public void sendPlayers(Game game) {
+		Random random = new Random();
+		List<UUID> shuffled = new ArrayList<UUID>();
+		List<UUID> copy = new ArrayList<UUID>(game.getPlayers());
+		while (!copy.isEmpty()) {
+			shuffled.add(copy.remove(random.nextInt(copy.size())));
+		}
 		
-		String mapName = MyGames.getMapManager().getMapName(game);
-		
-		for (UUID uuid : game.getPlayers()) {
+		for (UUID uuid : shuffled) {
 			Player player = Bukkit.getPlayer(uuid);
 			
 			if (player == null)
 				game.removePlayer(uuid);
 			
-			InventoryManager.saveInventory(player, "lobby." + player.getUniqueId());
-			InventoryManager.savePlayerState(player, "lobby." + player.getUniqueId());
+			//InventoryManager.saveInventory(player, "lobby." + player.getUniqueId());
+			//InventoryManager.savePlayerState(player, "lobby." + player.getUniqueId());
 			
-			player.setGameMode(GameMode.SURVIVAL);
-			player.setAllowFlight(false);
-			player.setMaxHealth(20);
-			player.setSaturation(20);
-			player.setHealth(20);
-			player.setFireTicks(0);
-			
-			player.getInventory().clear();
-			
-			player.setScoreboard(game.getScoreboard());
-			MyGames.getArcade().getScoreboardSwitcher().setProvider(uuid, game);
-			
-			game.preparePlayer(player);
-			
-			Location location = game.getSpawnLocation(player);
-			
-			if (location == null) {
-				player.teleport(MyGames.getSpawnLocation(), TeleportCause.PLUGIN);
-				player.sendMessage(MyGames.getChatManager().errorOccurred());
-				
-				continue;
-			}
-			
-			player.sendMessage(MyGames.getChatManager().changeMap(game, mapName));
-			player.teleport(location, TeleportCause.PLUGIN);
-			
-			MyGames.getMetadataManager().setInGame(player, game.getName());
-			
+			sendPlayer(player, game);			
 		}
+	}
+	
+	public void sendPlayer(Player player, Game game) {
+		player.setGameMode(GameMode.SURVIVAL);
+		player.setAllowFlight(false);
+		player.setMaxHealth(20);
+		player.setSaturation(20);
+		player.setHealth(20);
+		player.setFireTicks(0);
+		
+		player.getInventory().clear();
+		
+		player.setScoreboard(game.getScoreboard());
+		MyGames.getArcade().getScoreboardSwitcher().setProvider(player.getUniqueId(), game);
+		
+		game.preparePlayer(player);
+		
+		Location location = game.getSpawnLocation(player);
+		
+		if (location == null) {
+			player.teleport(MyGames.getSpawnLocation(), TeleportCause.PLUGIN);
+			player.sendMessage(MyGames.getChatManager().errorOccurred());
+			
+			return;
+		}
+		
+		player.sendMessage(MyGames.getChatManager().changeMap(game, MyGames.getMapManager().getMapName(game)));
+		player.teleport(location, TeleportCause.PLUGIN);
+		
+		MyGames.getMetadataManager().setInGame(player, game.getName());
 	}
 	
 	/*
@@ -363,5 +399,15 @@ public class SimpleLobbyManager extends LobbyManager implements Listener {
 				
 			} catch (Exception ignored) {}
 		}
+		game.clearPlayers();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see mcjagger.mc.mygames.LobbyManager#clear(org.bukkit.entity.Player)
+	 */
+	@Override
+	public void clear(Player player) {
+		lobbys.remove(player.getUniqueId());
 	}
 }

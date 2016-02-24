@@ -1,13 +1,19 @@
 package mcjagger.mc.craftgames;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
 import mcjagger.mc.craftgames.listeners.LobbyListener;
@@ -20,6 +26,7 @@ import mcjagger.mc.mygames.ConfigManager;
 import mcjagger.mc.mygames.LobbyManager;
 import mcjagger.mc.mygames.MetadataManager;
 import mcjagger.mc.mygames.MyGames;
+import mcjagger.mc.mygames.ScoreboardProvider;
 import mcjagger.mc.mygames.ScoreboardSwitcher;
 import mcjagger.mc.mygames.chat.ChatManager;
 import mcjagger.mc.mygames.game.Game;
@@ -28,7 +35,7 @@ import mcjagger.mc.mygames.weapon.WeaponListener;
 import mcjagger.mc.mygames.world.MapConfigManager;
 import mcjagger.mc.mygames.world.MapManager;
 
-public class PluginArcade extends Arcade {
+public class PluginArcade extends Arcade implements ScoreboardProvider {
 	
 	private ChatManager chatManager;
 	private ConfigManager configManager;
@@ -39,6 +46,7 @@ public class PluginArcade extends Arcade {
 	private SimpleScoreboardSwitcher scoreboardSwitcher;
 	
 	private Scoreboard defaultScoreboard;
+	private Objective sidebar;
 	
 	@Override
 	public void onLoad() {
@@ -57,6 +65,7 @@ public class PluginArcade extends Arcade {
 	public void onEnable() {
 		super.onEnable();
 		
+		
 		ItemWeapon.createWeapon(GameChooser.class);
 
 		LobbyListener ll = new LobbyListener();
@@ -67,10 +76,12 @@ public class PluginArcade extends Arcade {
 		Bukkit.getPluginManager().registerEvents(wl, MyGames.getArcade());
 		SignListener sl = new SignListener();
 		Bukkit.getPluginManager().registerEvents(sl, MyGames.getArcade());
+
+		defaultScoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 		
 		((SimpleScoreboardSwitcher)getScoreboardSwitcher()).enable();
+		getScoreboardSwitcher().setDefaultProvider(this);
 		
-		defaultScoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 	}
 	
 	@Override()
@@ -259,6 +270,7 @@ public class PluginArcade extends Arcade {
 		player.setScoreboard(MyGames.getArcade().getDefaultScoreboard());
 		MyGames.getArcade().getScoreboardSwitcher().useDefaultProvider(player.getUniqueId());
 		MyGames.getMetadataManager().setInLobby(player);
+		MyGames.getLobbyManager().clear(player);
 		
 		player.getInventory().clear();
 		player.getInventory().setArmorContents(new ItemStack[4]);
@@ -273,6 +285,12 @@ public class PluginArcade extends Arcade {
 		player.setHealthScaled(false);
 		player.setMaxHealth(20);
 		player.setSaturation(20);
+		player.setWalkSpeed(.2f);
+		
+		Iterator<PotionEffect> itr = new ArrayList<PotionEffect>(player.getActivePotionEffects()).iterator();
+		while (itr.hasNext()) {
+			player.removePotionEffect(itr.next().getType());
+		}
 
 		player.getInventory().addItem(ItemWeapon.createWeapon(GameChooser.class));
 		
@@ -300,6 +318,36 @@ public class PluginArcade extends Arcade {
 		player.setAllowFlight(true);
 		
 		return true;
+	}
+	
+	@Override
+	public Scoreboard nextScoreboard() {
+		updateScoreboard();
+		
+		return defaultScoreboard;
+	}
+
+	@Override
+	public boolean hasScoreboard() {
+		return defaultScoreboard != null;
+	}
+	
+	private void updateScoreboard() {
+		if (sidebar != null)
+			sidebar.unregister();
+		
+		sidebar = defaultScoreboard.registerNewObjective("obj_sidebar", "dummy");
+		sidebar.setDisplayName(" ");
+		//sidebar.setDisplayName(ChatColor.GOLD + "EG"+ChatColor.WHITE+"+"+ChatColor.GRAY+"BeefSupreme");
+		
+		sidebar.getScore(ChatColor.DARK_GRAY+	"v~~~~~~~v").setScore(6);
+		sidebar.getScore(ChatColor.AQUA		+ 	"Welcome!").setScore(5);
+		sidebar.getScore(ChatColor.DARK_GRAY+	"*~~~~~~~*").setScore(4);
+		sidebar.getScore(ChatColor.GREEN	+	"Players Online").setScore(3);
+		sidebar.getScore(ChatColor.GREEN + "" +  Bukkit.getOnlinePlayers().size() + "").setScore(2);
+		sidebar.getScore(ChatColor.DARK_GRAY+	"^~~~~~~~^").setScore(1);
+		
+		sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
 	}
 
 }

@@ -195,8 +195,8 @@ public final class MapCopyManager {
 			
 			MyGames.toLobby(player);
 			
-			InventoryManager.applyInventory(player, "lobby." + player.getUniqueId());
-			InventoryManager.applyPlayerState(player, "lobby." + player.getUniqueId());
+			//InventoryManager.applyInventory(player, "lobby." + player.getUniqueId());
+			//InventoryManager.applyPlayerState(player, "lobby." + player.getUniqueId());
 		}
 	}
 	

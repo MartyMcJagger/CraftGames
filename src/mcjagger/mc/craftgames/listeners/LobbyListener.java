@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -24,6 +27,10 @@ public class LobbyListener implements Listener {
 	@EventHandler
 	public void onJoin(PlayerJoinEvent event) {
 		MyGames.toLobby(event.getPlayer());
+		
+		if (!event.getPlayer().hasPlayedBefore())
+			Bukkit.broadcastMessage(ChatColor.YELLOW + "Watch out! New challenger: " + event.getPlayer().getDisplayName());
+		
 		event.setJoinMessage(MyGames.getChatManager().joinServer(event.getPlayer()));
 	}
 
@@ -57,8 +64,8 @@ public class LobbyListener implements Listener {
 			players.add(Bukkit.getPlayer(uuid));
 		}
 		
-		event.getRecipients().addAll(event.getPlayer().getWorld().getPlayers());
 		event.getRecipients().retainAll(players);
+		event.getRecipients().addAll(event.getPlayer().getWorld().getPlayers());
 	}
 
 	/*@EventHandler
@@ -71,7 +78,7 @@ public class LobbyListener implements Listener {
 			if (player != null)
 				sendErrorMessage(player);
 		}
-	}
+	}*/
 
 	@EventHandler
 	public void onInvClick(InventoryClickEvent event) {
@@ -80,15 +87,14 @@ public class LobbyListener implements Listener {
 
 			event.getWhoClicked().closeInventory();
 			event.setCancelled(true);
-			if (player != null)
-				sendErrorMessage(player);
+			//if (player != null)
+			//	sendErrorMessage(player);
 		}
-	}*/
+	}//*/
 
 	@EventHandler
 	public void onBlockPlaceEvent(BlockPlaceEvent event) {
 		if (MyGames.getArcade().getMetadataManager().getMode(event.getPlayer()) == MetadataManager.LOBBY) {
-
 			event.setCancelled(true);
 			sendErrorMessage(event.getPlayer());
 		}
@@ -118,7 +124,28 @@ public class LobbyListener implements Listener {
 		}
 	}
 
+	@EventHandler
+	public final void onPlayerDeath(PlayerDeathEvent event) {
+		if (MyGames.getArcade().getMetadataManager().getMode(event.getEntity()) == MetadataManager.LOBBY) {
+			
+			event.getDrops().clear();
+			event.setDroppedExp(0);
+			event.setKeepLevel(true);
+			event.setDeathMessage(null);
+			
+			event.getEntity().setHealth(20d);
+	
+			event.setKeepInventory(true);
+			event.getEntity().getInventory().clear();
+			
+			MyGames.toLobby(event.getEntity());
+		
+		}
+	}
+	
 	public void sendErrorMessage(Player player) {
 		player.sendMessage(MyGames.getChatManager().actionNotAllowed());
 	}
+	
+	
 }

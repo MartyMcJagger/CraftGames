@@ -22,6 +22,9 @@ permissions:
   mygames.command.join:
     description: Lets you join a game using the command
     default: true
+  mygames.command.forcejoin:
+    description: Lets you force another player to join a game
+    default: false
   mygames.command.leave:
     description: Lets you leave a game using the command
     default: true

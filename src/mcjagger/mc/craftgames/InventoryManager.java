@@ -19,7 +19,7 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 import mcjagger.mc.mygames.MyGames;
 
 public class InventoryManager {
-	
+	/*
 	public static final String GAME_RESTORE = "gameRestore";
 	public static final String WORLD = "world";
 	

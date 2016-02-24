@@ -303,10 +303,11 @@ public class SignListener implements Listener {
 		String[] line = new String[4];
 		line[0] = gm.getName();
 		line[1] = (gm.isRunning())?(ChatColor.RED+"[Running]"):(ChatColor.GREEN+"[join]");
-		line[2] = ChatColor.YELLOW + Integer.toString(gm.getPlayers().size())
-				+ ChatColor.BLUE + "/" + ChatColor.YELLOW
+		line[2] = ChatColor.AQUA + Integer.toString(gm.getPlayers().size())
+				+ ChatColor.BLUE + "/" + ChatColor.AQUA
 				+ gm.minPlayers + "-" + gm.maxPlayers;
-		line[3] = ChatColor.YELLOW + MyGames.getMapManager().getMapName(gm);
+		line[3] = (gm.allowJoinInProgress?ChatColor.GREEN:ChatColor.RED) + "JoinMidGame: " + (gm.allowJoinInProgress?"T":"F");
+		//line[3] = ChatColor.YELLOW + MyGames.getMapManager().getMapName(gm);
 		return line;
 	}
 }

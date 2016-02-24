@@ -1,6 +1,7 @@
 package mcjagger.mc.craftgames;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -12,6 +13,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import mcjagger.mc.mygames.MyGames;
 import mcjagger.mc.mygames.ScoreboardProvider;
 import mcjagger.mc.mygames.ScoreboardSwitcher;
+import org.bukkit.ChatColor;
 
 public class SimpleScoreboardSwitcher extends ScoreboardSwitcher {
 	
@@ -26,21 +28,32 @@ public class SimpleScoreboardSwitcher extends ScoreboardSwitcher {
 		@Override
 		public void run() 
 		{
+			Scoreboard defaultsb = defaultProvider.nextScoreboard();
+			
+			Map<String, Scoreboard> sbmap = new HashMap<String, Scoreboard>();
+			
 			for (UUID uuid : providers.keySet()) {
 				
 				Player player = Bukkit.getPlayer(uuid);
 				
 				if (player == null)  {
-					providers.remove(uuid);
 					continue;
 				}
 				
 				ScoreboardProvider provider = providers.get(uuid);
+				Scoreboard sb;
 				
-				if (provider == null || !provider.hasScoreboard())
-					provider = defaultProvider;
+				if (provider == null || !provider.hasScoreboard()) {
+					sb = defaultsb;
+				} else {
+					if (sbmap.containsKey(provider.getName())) {
+						sb = sbmap.get(provider.getName());
+					} else {
+						sb = provider.nextScoreboard();
+						sbmap.put(provider.getName(), sb);
+					}
+				}
 				
-				Scoreboard sb = provider.nextScoreboard();
 				player.setScoreboard(sb);
 				
 				MyGames.debug("New Scoreboard?");
@@ -53,13 +66,22 @@ public class SimpleScoreboardSwitcher extends ScoreboardSwitcher {
 				for (String entry : old.getScoreboard().getEntries())
 					old.*/
 			}
+
+			
+			for (Player player : Bukkit.getOnlinePlayers()) {
+				if (providers.containsKey(player.getUniqueId()))
+					continue;
+				
+				player.setScoreboard(defaultsb);
+			}
 		}
 	};
 	
 	@Override
 	public void setProvider(UUID uuid, ScoreboardProvider sp) {
 		Player player = Bukkit.getPlayer(uuid);
-		player.setScoreboard(sp.nextScoreboard());
+		if (sp != null)
+			player.setScoreboard(sp.nextScoreboard());
 		providers.put(uuid, sp);
 	}
 	
@@ -82,7 +104,7 @@ public class SimpleScoreboardSwitcher extends ScoreboardSwitcher {
 		
 		Objective obj = sb.getObjective(DisplaySlot.SIDEBAR);
 		if (obj == null) {
-			obj = sb.registerNewObjective("Sidebar", "dummy");
+			obj = sb.registerNewObjective(ChatColor.GOLD + "EG+", "dummy");
 			obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 		}
 		

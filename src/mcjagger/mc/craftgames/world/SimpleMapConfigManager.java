@@ -101,7 +101,6 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		MyGames.debug("Setting config for " + world.getName());
 		
 		world.setAutoSave(false);
-		world.setKeepSpawnInMemory(false);
 		world.setDifficulty(Difficulty.HARD);
 		world.setPVP(true);
 		
@@ -156,10 +155,9 @@ public class SimpleMapConfigManager extends MapConfigManager {
 		return world;
 	}
 	public void loadConfigs() {
-
 		configs = new HashMap<String, FileConfiguration>();
 		configFiles = new HashMap<String, File>();
-
+		
 		list = defConfig.getStringList(WORLD_LIST_PATH);
 
 		for (String key : list)
